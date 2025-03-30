@@ -1,0 +1,22 @@
+2025-03-30 05:23:53,459 - __main__ - INFO - 开始创建GitHub仓库并上传代码
+2025-03-30 05:23:53,555 - __main__ - INFO - 获取到GitHub用户名: Johnwei2005
+2025-03-30 05:23:53,556 - __main__ - INFO - 尝试删除GitHub仓库: Johnwei2005/oil-field-gas-channeling-prediction-optimized-v2
+2025-03-30 05:23:53,619 - __main__ - WARNING - GitHub仓库删除失败: 404 - {"message":"Not Found","documentation_url":"https://docs.github.com/rest/repos/repos#delete-a-repository","status":"404"}
+2025-03-30 05:23:53,620 - __main__ - INFO - 开始创建GitHub仓库: oil-field-gas-channeling-prediction-optimized-v2
+2025-03-30 05:23:54,419 - __main__ - INFO - GitHub仓库创建成功: oil-field-gas-channeling-prediction-optimized-v2
+2025-03-30 05:23:54,419 - __main__ - INFO - 仓库URL: https://github.com/Johnwei2005/oil-field-gas-channeling-prediction-optimized-v2
+2025-03-30 05:23:54,420 - __main__ - INFO - 开始设置本地Git仓库: /tmp/oil-field-gas-channeling-prediction-optimized-v2_20250330_052353
+2025-03-30 05:23:54,437 - __main__ - INFO - 本地Git仓库设置成功
+2025-03-30 05:23:54,437 - __main__ - INFO - 开始复制文件: /home/ubuntu/oil-field-optimization/optimized_code -> /tmp/oil-field-gas-channeling-prediction-optimized-v2_20250330_052353
+2025-03-30 05:23:54,438 - __main__ - INFO - 开始复制文件: /home/ubuntu/oil-field-optimization/optimized_code/data -> /tmp/oil-field-gas-channeling-prediction-optimized-v2_20250330_052353/data
+2025-03-30 05:23:54,439 - __main__ - INFO - 文件复制成功
+2025-03-30 05:23:54,439 - __main__ - INFO - 开始复制文件: /home/ubuntu/oil-field-optimization/optimized_code/models -> /tmp/oil-field-gas-channeling-prediction-optimized-v2_20250330_052353/models
+2025-03-30 05:23:54,439 - __main__ - INFO - 文件复制成功
+2025-03-30 05:23:54,439 - __main__ - INFO - 开始复制文件: /home/ubuntu/oil-field-optimization/optimized_code/results -> /tmp/oil-field-gas-channeling-prediction-optimized-v2_20250330_052353/results
+2025-03-30 05:23:54,439 - __main__ - INFO - 文件复制成功
+2025-03-30 05:23:54,439 - __main__ - INFO - 开始复制文件: /home/ubuntu/oil-field-optimization/optimized_code/logs -> /tmp/oil-field-gas-channeling-prediction-optimized-v2_20250330_052353/logs
+2025-03-30 05:23:54,439 - __main__ - INFO - 文件复制成功
+2025-03-30 05:23:54,440 - __main__ - INFO - 文件复制成功
+2025-03-30 05:23:54,440 - __main__ - INFO - 开始提交并推送代码
+2025-03-30 05:23:55,066 - __main__ - INFO - 代码提交并推送成功
+2025-03-30 05:23:55,067 - __main__ - INFO - GitHub仓库创建并上传代码成功: https://github.com/Johnwei2005/oil-field-gas-channeling-prediction-optimized-v2

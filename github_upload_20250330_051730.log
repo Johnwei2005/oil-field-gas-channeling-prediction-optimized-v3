@@ -1,0 +1,10 @@
+2025-03-30 05:17:30,581 - __main__ - INFO - 开始创建GitHub仓库并上传代码
+2025-03-30 05:17:30,581 - __main__ - INFO - 开始创建GitHub仓库: oil-field-gas-channeling-prediction-optimized
+2025-03-30 05:17:31,335 - __main__ - INFO - GitHub仓库创建成功: oil-field-gas-channeling-prediction-optimized
+2025-03-30 05:17:31,335 - __main__ - INFO - 仓库URL: https://github.com/Johnwei2005/oil-field-gas-channeling-prediction-optimized
+2025-03-30 05:17:31,336 - __main__ - INFO - 开始设置本地Git仓库: /tmp/oil-field-gas-channeling-prediction-optimized_20250330_051730
+2025-03-30 05:17:31,353 - __main__ - INFO - 本地Git仓库设置成功
+2025-03-30 05:17:31,353 - __main__ - INFO - 开始复制文件: /home/ubuntu/oil-field-optimization/optimized_code -> /tmp/oil-field-gas-channeling-prediction-optimized_20250330_051730
+2025-03-30 05:17:31,355 - __main__ - INFO - 文件复制成功
+2025-03-30 05:17:31,355 - __main__ - INFO - 开始提交并推送代码
+2025-03-30 05:17:31,373 - __main__ - ERROR - 提交并推送代码失败: Command '['git', 'commit', '-m', 'Initial commit: 基于物理约束残差建模的油田气窜预测系统（优化版）- R²值控制在0.9-0.95之间']' returned non-zero exit status 128.

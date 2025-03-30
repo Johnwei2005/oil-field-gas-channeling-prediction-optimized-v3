@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: 当前文件",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: 主程序",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "args": ["--train", "--model-type", "gaussian_process"],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: 数据处理",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/data_processor.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}

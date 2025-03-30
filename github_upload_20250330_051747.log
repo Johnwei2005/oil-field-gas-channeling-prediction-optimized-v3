@@ -1,0 +1,4 @@
+2025-03-30 05:17:47,460 - __main__ - INFO - 开始创建GitHub仓库并上传代码
+2025-03-30 05:17:47,460 - __main__ - INFO - 开始创建GitHub仓库: oil-field-gas-channeling-prediction-optimized
+2025-03-30 05:17:47,554 - __main__ - ERROR - 创建GitHub仓库失败: 422 Client Error: Unprocessable Entity for url: https://api.github.com/user/repos
+2025-03-30 05:17:47,554 - __main__ - ERROR - 仓库可能已存在，请尝试使用不同的名称
