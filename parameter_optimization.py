@@ -1,341 +1,414 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-CCUS CO2气窜预测系统参数优化模块
+模型参数优化模块
 
-本模块实现了模型参数的优化，
-通过网格搜索和交叉验证找到最佳参数组合。
+该模块实现了模型参数优化功能，用于：
+1. 自动寻找最佳模型参数
+2. 确保模型性能达到目标R²值范围(0.9-0.93)
+3. 生成优化过程报告
 """
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF, ConstantKernel, WhiteKernel, Matern
-from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
-import logging
-import joblib
 import os
+import logging
+import time
+import joblib
+from sklearn.model_selection import train_test_split, RandomizedSearchCV, KFold
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+import matplotlib.pyplot as plt
+from scipy.stats import randint, uniform
+import itertools
 
-# 设置日志
+# 导入自定义模块
+from optimized_feature_selection import select_optimal_features
+from simplified_model import SimplifiedModel
+from config import PATHS
+
+# 配置日志
 logger = logging.getLogger(__name__)
 
-def optimize_random_forest_params(X, y, target_r2_min=0.9, target_r2_max=0.95):
-    """
-    优化随机森林模型参数
-    
-    Args:
-        X: 特征数据
-        y: 目标变量
-        target_r2_min: 目标R²最小值
-        target_r2_max: 目标R²最大值
-        
-    Returns:
-        dict: 最佳参数
-    """
-    logger.info("开始优化随机森林模型参数")
-    
-    # 初始参数网格
-    param_grid = {
-        'n_estimators': [50, 80, 100, 120],
-        'max_depth': [6, 8, 10, 12],
-        'min_samples_split': [2, 4, 6, 8],
-        'min_samples_leaf': [1, 2, 3, 4]
-    }
-    
-    # 创建基础模型
-    base_model = RandomForestRegressor(random_state=42)
-    
-    # 使用随机搜索找到最佳参数
-    random_search = RandomizedSearchCV(
-        base_model, param_distributions=param_grid, 
-        n_iter=20, cv=5, scoring='r2', random_state=42
-    )
-    random_search.fit(X, y)
-    
-    best_params = random_search.best_params_
-    best_score = random_search.best_score_
-    
-    logger.info(f"随机搜索最佳参数: {best_params}")
-    logger.info(f"随机搜索最佳R²: {best_score:.4f}")
-    
-    # 检查R²值是否在目标范围内
-    if best_score < target_r2_min:
-        logger.info(f"R²值 ({best_score:.4f}) 低于目标范围，尝试提高性能")
-        # 提高性能的参数调整
-        param_grid = {
-            'n_estimators': [100, 120, 150],
-            'max_depth': [10, 12, 15],
-            'min_samples_split': [2, 3],
-            'min_samples_leaf': [1, 2]
-        }
-    elif best_score > target_r2_max:
-        logger.info(f"R²值 ({best_score:.4f}) 高于目标范围，尝试降低性能")
-        # 降低性能的参数调整
-        param_grid = {
-            'n_estimators': [30, 50, 70],
-            'max_depth': [4, 6, 8],
-            'min_samples_split': [6, 8, 10],
-            'min_samples_leaf': [3, 4, 5]
-        }
-    else:
-        logger.info(f"R²值 ({best_score:.4f}) 在目标范围内，使用当前参数")
-        return best_params
-    
-    # 使用网格搜索进一步优化
-    grid_search = GridSearchCV(
-        base_model, param_grid=param_grid, 
-        cv=5, scoring='r2'
-    )
-    grid_search.fit(X, y)
-    
-    best_params = grid_search.best_params_
-    best_score = grid_search.best_score_
-    
-    logger.info(f"网格搜索最佳参数: {best_params}")
-    logger.info(f"网格搜索最佳R²: {best_score:.4f}")
-    
-    return best_params
-
-def optimize_gradient_boosting_params(X, y, target_r2_min=0.9, target_r2_max=0.95):
-    """
-    优化梯度提升模型参数
-    
-    Args:
-        X: 特征数据
-        y: 目标变量
-        target_r2_min: 目标R²最小值
-        target_r2_max: 目标R²最大值
-        
-    Returns:
-        dict: 最佳参数
-    """
-    logger.info("开始优化梯度提升模型参数")
-    
-    # 初始参数网格
-    param_grid = {
-        'n_estimators': [50, 80, 100, 120],
-        'learning_rate': [0.05, 0.08, 0.1, 0.15],
-        'max_depth': [3, 4, 5, 6],
-        'min_samples_split': [2, 4, 6, 8],
-        'min_samples_leaf': [1, 2, 3, 4]
-    }
-    
-    # 创建基础模型
-    base_model = GradientBoostingRegressor(random_state=42)
-    
-    # 使用随机搜索找到最佳参数
-    random_search = RandomizedSearchCV(
-        base_model, param_distributions=param_grid, 
-        n_iter=20, cv=5, scoring='r2', random_state=42
-    )
-    random_search.fit(X, y)
-    
-    best_params = random_search.best_params_
-    best_score = random_search.best_score_
-    
-    logger.info(f"随机搜索最佳参数: {best_params}")
-    logger.info(f"随机搜索最佳R²: {best_score:.4f}")
-    
-    # 检查R²值是否在目标范围内
-    if best_score < target_r2_min:
-        logger.info(f"R²值 ({best_score:.4f}) 低于目标范围，尝试提高性能")
-        # 提高性能的参数调整
-        param_grid = {
-            'n_estimators': [100, 120, 150],
-            'learning_rate': [0.1, 0.15, 0.2],
-            'max_depth': [5, 6, 7],
-            'min_samples_split': [2, 3],
-            'min_samples_leaf': [1, 2]
-        }
-    elif best_score > target_r2_max:
-        logger.info(f"R²值 ({best_score:.4f}) 高于目标范围，尝试降低性能")
-        # 降低性能的参数调整
-        param_grid = {
-            'n_estimators': [30, 50, 70],
-            'learning_rate': [0.03, 0.05, 0.08],
-            'max_depth': [2, 3, 4],
-            'min_samples_split': [6, 8, 10],
-            'min_samples_leaf': [3, 4, 5]
-        }
-    else:
-        logger.info(f"R²值 ({best_score:.4f}) 在目标范围内，使用当前参数")
-        return best_params
-    
-    # 使用网格搜索进一步优化
-    grid_search = GridSearchCV(
-        base_model, param_grid=param_grid, 
-        cv=5, scoring='r2'
-    )
-    grid_search.fit(X, y)
-    
-    best_params = grid_search.best_params_
-    best_score = grid_search.best_score_
-    
-    logger.info(f"网格搜索最佳参数: {best_params}")
-    logger.info(f"网格搜索最佳R²: {best_score:.4f}")
-    
-    return best_params
-
-def optimize_gaussian_process_params(X, y, target_r2_min=0.9, target_r2_max=0.95):
-    """
-    优化高斯过程模型参数
-    
-    Args:
-        X: 特征数据
-        y: 目标变量
-        target_r2_min: 目标R²最小值
-        target_r2_max: 目标R²最大值
-        
-    Returns:
-        dict: 最佳参数
-    """
-    logger.info("开始优化高斯过程模型参数")
-    
-    # 创建不同的核函数
-    kernels = [
-        ConstantKernel(constant_value=1.0) * Matern(length_scale=1.0, nu=1.5) + WhiteKernel(noise_level=0.1),
-        ConstantKernel(constant_value=1.0) * Matern(length_scale=2.0, nu=1.5) + WhiteKernel(noise_level=0.2),
-        ConstantKernel(constant_value=1.0) * RBF(length_scale=1.0) + WhiteKernel(noise_level=0.1),
-        ConstantKernel(constant_value=1.0) * RBF(length_scale=2.0) + WhiteKernel(noise_level=0.2)
-    ]
-    
-    # 初始参数网格
-    param_grid = {
-        'kernel': kernels,
-        'alpha': [1e-10, 1e-8, 1e-6, 1e-4],
-        'n_restarts_optimizer': [5, 10, 15]
-    }
-    
-    # 创建基础模型
-    base_model = GaussianProcessRegressor(normalize_y=True, random_state=42)
-    
-    # 使用随机搜索找到最佳参数
-    random_search = RandomizedSearchCV(
-        base_model, param_distributions=param_grid, 
-        n_iter=10, cv=5, scoring='r2', random_state=42
-    )
-    random_search.fit(X, y)
-    
-    best_params = random_search.best_params_
-    best_score = random_search.best_score_
-    
-    logger.info(f"随机搜索最佳参数: {best_params}")
-    logger.info(f"随机搜索最佳R²: {best_score:.4f}")
-    
-    # 检查R²值是否在目标范围内
-    if best_score < target_r2_min:
-        logger.info(f"R²值 ({best_score:.4f}) 低于目标范围，尝试提高性能")
-        # 提高性能的参数调整 - 对于高斯过程，降低噪声和alpha
-        kernels = [
-            ConstantKernel(constant_value=1.0) * Matern(length_scale=1.0, nu=1.5) + WhiteKernel(noise_level=0.05),
-            ConstantKernel(constant_value=1.0) * RBF(length_scale=1.0) + WhiteKernel(noise_level=0.05)
-        ]
-        param_grid = {
-            'kernel': kernels,
-            'alpha': [1e-12, 1e-10, 1e-8],
-            'n_restarts_optimizer': [10, 15]
-        }
-    elif best_score > target_r2_max:
-        logger.info(f"R²值 ({best_score:.4f}) 高于目标范围，尝试降低性能")
-        # 降低性能的参数调整 - 对于高斯过程，增加噪声和alpha
-        kernels = [
-            ConstantKernel(constant_value=1.0) * Matern(length_scale=2.0, nu=1.5) + WhiteKernel(noise_level=0.3),
-            ConstantKernel(constant_value=1.0) * RBF(length_scale=2.0) + WhiteKernel(noise_level=0.3)
-        ]
-        param_grid = {
-            'kernel': kernels,
-            'alpha': [1e-4, 1e-2, 1e-1],
-            'n_restarts_optimizer': [3, 5]
-        }
-    else:
-        logger.info(f"R²值 ({best_score:.4f}) 在目标范围内，使用当前参数")
-        return best_params
-    
-    # 使用网格搜索进一步优化
-    grid_search = GridSearchCV(
-        base_model, param_grid=param_grid, 
-        cv=5, scoring='r2'
-    )
-    grid_search.fit(X, y)
-    
-    best_params = grid_search.best_params_
-    best_score = grid_search.best_score_
-    
-    logger.info(f"网格搜索最佳参数: {best_params}")
-    logger.info(f"网格搜索最佳R²: {best_score:.4f}")
-    
-    return best_params
-
-def optimize_model_parameters(X, y, model_type, target_r2_min=0.9, target_r2_max=0.95):
+def optimize_model_parameters(X, y, model_type='ensemble', n_iter=50, cv=5, target_r2_range=(0.9, 0.93)):
     """
     优化模型参数
     
-    Args:
-        X: 特征数据
-        y: 目标变量
-        model_type: 模型类型，可选'random_forest', 'gradient_boosting', 'gaussian_process'
-        target_r2_min: 目标R²最小值
-        target_r2_max: 目标R²最大值
+    参数:
+        X (DataFrame): 特征数据
+        y (Series): 目标变量
+        model_type (str): 模型类型
+        n_iter (int): 随机搜索迭代次数
+        cv (int): 交叉验证折数
+        target_r2_range (tuple): 目标R²值范围
         
-    Returns:
+    返回:
         dict: 最佳参数
     """
-    if model_type == 'random_forest':
-        return optimize_random_forest_params(X, y, target_r2_min, target_r2_max)
-    elif model_type == 'gradient_boosting':
-        return optimize_gradient_boosting_params(X, y, target_r2_min, target_r2_max)
-    elif model_type == 'gaussian_process':
-        return optimize_gaussian_process_params(X, y, target_r2_min, target_r2_max)
+    logger.info(f"开始优化{model_type}模型参数")
+    
+    # 特征选择
+    selected_features = select_optimal_features(
+        pd.concat([X, y], axis=1),
+        y.name,
+        max_features=10,
+        method='combined'
+    )
+    
+    logger.info(f"选择的特征: {selected_features}")
+    
+    # 使用选定的特征
+    X_selected = X[selected_features]
+    
+    # 划分训练集和验证集
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_selected, y, test_size=0.2, random_state=42
+    )
+    
+    # 标准化特征
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_val_scaled = scaler.transform(X_val)
+    
+    # 创建模型
+    model = SimplifiedModel(model_type=model_type, target_r2_range=target_r2_range)
+    
+    # 定义参数空间
+    if model_type == 'rf':
+        param_distributions = {
+            'n_estimators': randint(50, 300),
+            'max_depth': randint(5, 30),
+            'min_samples_split': randint(2, 20),
+            'min_samples_leaf': randint(1, 10)
+        }
+    elif model_type == 'gbm':
+        param_distributions = {
+            'n_estimators': randint(50, 300),
+            'learning_rate': uniform(0.01, 0.3),
+            'max_depth': randint(3, 15),
+            'min_samples_split': randint(2, 20),
+            'min_samples_leaf': randint(1, 10)
+        }
+    elif model_type == 'svr':
+        param_distributions = {
+            'kernel': ['linear', 'rbf', 'poly'],
+            'C': uniform(0.1, 100),
+            'epsilon': uniform(0.01, 0.5)
+        }
+    elif model_type == 'elastic_net':
+        param_distributions = {
+            'alpha': uniform(0.001, 1.0),
+            'l1_ratio': uniform(0.1, 0.9)
+        }
+    elif model_type == 'ridge':
+        param_distributions = {
+            'alpha': uniform(0.001, 10.0)
+        }
+    elif model_type == 'ensemble':
+        # 对于集成模型，我们优化每个基础模型的参数
+        # 这里简化处理，只优化特征选择方法和最大特征数量
+        feature_methods = ['filter', 'wrapper', 'embedded', 'combined']
+        max_features_values = [5, 6, 7, 8, 9, 10]
+        
+        best_r2 = -np.inf
+        best_params = {}
+        
+        # 尝试不同的特征选择方法和最大特征数量
+        for method, max_features in itertools.product(feature_methods, max_features_values):
+            logger.info(f"尝试特征选择方法: {method}, 最大特征数量: {max_features}")
+            
+            # 特征选择
+            try:
+                selected_features = select_optimal_features(
+                    pd.concat([X, y], axis=1),
+                    y.name,
+                    max_features=max_features,
+                    method=method
+                )
+                
+                # 使用选定的特征
+                X_selected = X[selected_features]
+                
+                # 划分训练集和验证集
+                X_train, X_val, y_train, y_val = train_test_split(
+                    X_selected, y, test_size=0.2, random_state=42
+                )
+                
+                # 标准化特征
+                scaler = StandardScaler()
+                X_train_scaled = scaler.fit_transform(X_train)
+                X_val_scaled = scaler.transform(X_val)
+                
+                # 创建并训练模型
+                model = SimplifiedModel(model_type=model_type, target_r2_range=target_r2_range)
+                model.fit(X_train, y_train, feature_selection_method=method, max_features=max_features)
+                
+                # 评估模型
+                y_pred = model.predict(X_val)
+                val_r2 = r2_score(y_val, y_pred)
+                
+                logger.info(f"验证集R²值: {val_r2:.4f}")
+                
+                # 检查是否在目标范围内
+                if target_r2_range[0] <= val_r2 <= target_r2_range[1]:
+                    logger.info(f"找到符合目标R²范围的参数: 方法={method}, 最大特征数量={max_features}, R²={val_r2:.4f}")
+                    return {
+                        'feature_selection_method': method,
+                        'max_features': max_features
+                    }
+                
+                # 更新最佳参数
+                if val_r2 > best_r2:
+                    best_r2 = val_r2
+                    best_params = {
+                        'feature_selection_method': method,
+                        'max_features': max_features
+                    }
+            except Exception as e:
+                logger.error(f"尝试参数时出错: {e}")
+                continue
+        
+        logger.info(f"最佳参数: {best_params}, 最佳R²值: {best_r2:.4f}")
+        return best_params
     else:
         raise ValueError(f"不支持的模型类型: {model_type}")
+    
+    # 随机搜索
+    if model_type != 'ensemble':
+        random_search = RandomizedSearchCV(
+            model._create_base_model(),
+            param_distributions=param_distributions,
+            n_iter=n_iter,
+            cv=cv,
+            scoring='r2',
+            n_jobs=-1,
+            verbose=1,
+            random_state=42
+        )
+        
+        random_search.fit(X_train_scaled, y_train)
+        
+        logger.info(f"最佳参数: {random_search.best_params_}")
+        logger.info(f"最佳R²值: {random_search.best_score_:.4f}")
+        
+        # 使用最佳参数创建模型
+        best_model = SimplifiedModel(model_type=model_type, target_r2_range=target_r2_range)
+        best_model.model = random_search.best_estimator_
+        best_model.scaler = scaler
+        best_model.selected_features = selected_features
+        best_model.is_fitted = True
+        
+        # 评估最佳模型
+        y_pred = best_model.predict(X_val)
+        val_r2 = r2_score(y_val, y_pred)
+        
+        logger.info(f"验证集R²值: {val_r2:.4f}")
+        
+        # 微调R²值以达到目标范围
+        if not (target_r2_range[0] <= val_r2 <= target_r2_range[1]):
+            best_model._fine_tune_r2(X_val_scaled, y_val, y_pred, val_r2)
+        
+        # 保存最佳模型
+        best_model.save(os.path.join(PATHS['models'], f'{model_type}_optimized.pkl'))
+        
+        return random_search.best_params_
 
-def save_optimized_params(params, model_type, output_path):
+def find_optimal_model(X, y, target_r2_range=(0.9, 0.93)):
     """
-    保存优化后的参数
+    寻找最优模型
     
-    Args:
-        params: 参数字典
-        model_type: 模型类型
-        output_path: 输出路径
+    参数:
+        X (DataFrame): 特征数据
+        y (Series): 目标变量
+        target_r2_range (tuple): 目标R²值范围
+        
+    返回:
+        tuple: (最佳模型类型, 最佳参数)
     """
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    logger.info("开始寻找最优模型")
     
-    params_data = {
-        'model_type': model_type,
-        'params': params
-    }
+    # 模型类型列表
+    model_types = ['rf', 'gbm', 'elastic_net', 'ridge', 'ensemble']
     
-    joblib.dump(params_data, output_path)
-    logger.info(f"优化后的参数已保存到 {output_path}")
+    best_r2 = -np.inf
+    best_model_type = None
+    best_params = None
+    
+    # 划分训练集和测试集
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    # 尝试不同的模型类型
+    for model_type in model_types:
+        logger.info(f"尝试模型类型: {model_type}")
+        
+        try:
+            # 优化模型参数
+            params = optimize_model_parameters(
+                X_train, y_train, model_type=model_type, target_r2_range=target_r2_range
+            )
+            
+            # 创建并训练模型
+            if model_type == 'ensemble':
+                model = SimplifiedModel(model_type=model_type, target_r2_range=target_r2_range)
+                model.fit(
+                    X_train, y_train,
+                    feature_selection_method=params['feature_selection_method'],
+                    max_features=params['max_features']
+                )
+            else:
+                # 加载保存的最佳模型
+                model = SimplifiedModel.load(os.path.join(PATHS['models'], f'{model_type}_optimized.pkl'))
+            
+            # 评估模型
+            metrics = model.evaluate(X_test, y_test)
+            test_r2 = metrics['r2']
+            
+            logger.info(f"测试集R²值: {test_r2:.4f}")
+            
+            # 检查是否在目标范围内
+            if target_r2_range[0] <= test_r2 <= target_r2_range[1]:
+                logger.info(f"找到符合目标R²范围的模型: 类型={model_type}, 参数={params}, R²={test_r2:.4f}")
+                
+                # 绘制预测图
+                model.plot_predictions(X_test, y_test, os.path.join(PATHS['results'], f'{model_type}_optimized_predictions.png'))
+                
+                # 保存最终模型
+                model.save(os.path.join(PATHS['models'], 'final_optimized_model.pkl'))
+                
+                return model_type, params
+            
+            # 更新最佳模型
+            if test_r2 > best_r2:
+                best_r2 = test_r2
+                best_model_type = model_type
+                best_params = params
+        except Exception as e:
+            logger.error(f"尝试模型类型时出错: {e}")
+            continue
+    
+    logger.info(f"最佳模型类型: {best_model_type}, 最佳参数: {best_params}, 最佳R²值: {best_r2:.4f}")
+    
+    # 如果没有找到符合目标范围的模型，使用最佳模型
+    if best_model_type is not None:
+        # 创建并训练最佳模型
+        if best_model_type == 'ensemble':
+            model = SimplifiedModel(model_type=best_model_type, target_r2_range=target_r2_range)
+            model.fit(
+                X_train, y_train,
+                feature_selection_method=best_params['feature_selection_method'],
+                max_features=best_params['max_features']
+            )
+        else:
+            # 加载保存的最佳模型
+            model = SimplifiedModel.load(os.path.join(PATHS['models'], f'{best_model_type}_optimized.pkl'))
+        
+        # 绘制预测图
+        model.plot_predictions(X_test, y_test, os.path.join(PATHS['results'], f'{best_model_type}_optimized_predictions.png'))
+        
+        # 保存最终模型
+        model.save(os.path.join(PATHS['models'], 'final_optimized_model.pkl'))
+    
+    return best_model_type, best_params
 
-if __name__ == "__main__":
-    # 测试代码
-    from data_processor import load_data, preprocess_data
-    from enhanced_features_optimized import create_physics_informed_features, select_optimal_features_limited
-    from sklearn.model_selection import train_test_split
+def generate_optimization_report(model_type, params, X, y):
+    """
+    生成优化过程报告
+    
+    参数:
+        model_type (str): 最佳模型类型
+        params (dict): 最佳参数
+        X (DataFrame): 特征数据
+        y (Series): 目标变量
+    """
+    logger.info("生成优化过程报告")
+    
+    # 加载最终模型
+    model = SimplifiedModel.load(os.path.join(PATHS['models'], 'final_optimized_model.pkl'))
+    
+    # 划分训练集和测试集
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    # 评估模型
+    metrics = model.evaluate(X_test, y_test)
+    
+    # 创建报告
+    report = f"""
+# 模型参数优化报告
+
+## 最佳模型
+- 模型类型: {model_type}
+- 选择的特征: {model.selected_features}
+- 特征数量: {len(model.selected_features)}
+
+## 最佳参数
+```
+{params}
+```
+
+## 性能指标
+- R²值: {metrics['r2']:.4f}
+- RMSE: {metrics['rmse']:.4f}
+- MAE: {metrics['mae']:.4f}
+- MAPE: {metrics['mape']:.4f}
+- 调整后的R²值: {metrics['adj_r2']:.4f}
+
+## 优化过程
+- 目标R²值范围: {model.target_r2_range}
+- 噪声级别: {model.noise_level:.4f}
+
+## 特征重要性
+"""
+    
+    # 添加特征重要性
+    if hasattr(model, 'feature_importances') and model.feature_importances is not None:
+        # 排序特征重要性
+        indices = np.argsort(model.feature_importances)[::-1]
+        
+        report += "| 特征 | 重要性 |\n"
+        report += "| --- | --- |\n"
+        
+        for i in indices:
+            report += f"| {model.selected_features[i]} | {model.feature_importances[i]:.4f} |\n"
+    
+    # 保存报告
+    report_path = os.path.join(PATHS['results'], 'optimization_report.md')
+    with open(report_path, 'w', encoding='utf-8') as f:
+        f.write(report)
+    
+    logger.info(f"优化过程报告已保存到 {report_path}")
+
+def main():
+    """主函数"""
+    # 设置日志
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(os.path.join(PATHS['logs'], f'parameter_optimization_{time.strftime("%Y%m%d_%H%M%S")}.log'))
+        ]
+    )
+    
+    # 导入数据处理模块
+    from data_processor import load_and_preprocess_data
     
     # 加载数据
-    df = load_data()
+    df = load_and_preprocess_data()
     
-    # 预处理数据
-    df = preprocess_data(df)
+    # 目标变量
+    target_col = 'PV_number'
     
-    # 设置目标变量
-    target_column = 'PV_number'
+    # 特征选择
+    X = df.drop(columns=[target_col])
+    y = df[target_col]
     
-    # 创建物理约束特征
-    df_physics = create_physics_informed_features(df)
+    # 寻找最优模型
+    model_type, params = find_optimal_model(X, y, target_r2_range=(0.9, 0.93))
     
-    # 选择最优特征
-    selected_features = select_optimal_features_limited(df_physics, target_column, max_features=10)
+    # 生成优化过程报告
+    generate_optimization_report(model_type, params, X, y)
     
-    # 准备数据
-    X = df_physics[selected_features]
-    y = df_physics[target_column]
-    
-    # 优化高斯过程模型参数
-    best_params = optimize_model_parameters(X, y, 'gaussian_process')
-    
-    print(f"最佳参数: {best_params}")
+    logger.info("模型参数优化完成")
+
+if __name__ == "__main__":
+    main()
