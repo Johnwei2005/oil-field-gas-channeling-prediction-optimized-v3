@@ -1,0 +1,87 @@
+2025-03-30 11:19:48,801 - __main__ - INFO - 
+================================================================================
+                              CCUS CO2气窜预测系统全流程启动                               
+================================================================================
+2025-03-30 11:19:48,801 - __main__ - INFO - 选择的模型类型: gaussian_process
+2025-03-30 11:19:48,801 - __main__ - INFO - 跳过的步骤: 无
+2025-03-30 11:19:48,802 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/data
+2025-03-30 11:19:48,802 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/data/raw
+2025-03-30 11:19:48,802 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/data/processed
+2025-03-30 11:19:48,802 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/models
+2025-03-30 11:19:48,802 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/results
+2025-03-30 11:19:48,802 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/logs
+2025-03-30 11:19:48,802 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/docs
+2025-03-30 11:19:48,802 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/notebooks
+2025-03-30 11:19:48,802 - __main__ - INFO - 
+================================================================================
+                                      数据处理                                      
+================================================================================
+2025-03-30 11:19:49,424 - __main__ - INFO - 开始数据处理...
+2025-03-30 11:19:49,425 - data_processor - INFO - 尝试使用 gbk 编码加载数据: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/data/raw/CO2气窜原始表.csv
+2025-03-30 11:19:49,429 - data_processor - INFO - 成功使用 gbk 编码加载数据
+2025-03-30 11:19:49,429 - data_processor - INFO - 开始预处理数据
+2025-03-30 11:19:49,432 - data_processor - WARNING - 列 地层温度℃ 中发现 2 个异常值
+2025-03-30 11:19:49,434 - data_processor - INFO - 已将列 地层温度℃ 中的异常值限制在边界内
+2025-03-30 11:19:49,437 - data_processor - WARNING - 列 注气前地层压力mpa 中发现 1 个异常值
+2025-03-30 11:19:49,438 - data_processor - INFO - 已将列 注气前地层压力mpa 中的异常值限制在边界内
+2025-03-30 11:19:49,442 - data_processor - WARNING - 列 渗透率md 中发现 6 个异常值
+2025-03-30 11:19:49,443 - data_processor - INFO - 已将列 渗透率md 中的异常值限制在边界内
+2025-03-30 11:19:49,445 - data_processor - WARNING - 列 地层原油粘度mpas 中发现 11 个异常值
+2025-03-30 11:19:49,446 - data_processor - INFO - 已将列 地层原油粘度mpas 中的异常值限制在边界内
+2025-03-30 11:19:49,448 - data_processor - WARNING - 列 地层原油密度g/cm3 中发现 4 个异常值
+2025-03-30 11:19:49,449 - data_processor - INFO - 已将列 地层原油密度g/cm3 中的异常值限制在边界内
+2025-03-30 11:19:49,451 - data_processor - WARNING - 列 井组有效厚度m 中发现 6 个异常值
+2025-03-30 11:19:49,452 - data_processor - INFO - 已将列 井组有效厚度m 中的异常值限制在边界内
+2025-03-30 11:19:49,454 - data_processor - WARNING - 列 井距m 中发现 4 个异常值
+2025-03-30 11:19:49,455 - data_processor - INFO - 已将列 井距m 中的异常值限制在边界内
+2025-03-30 11:19:49,457 - data_processor - WARNING - 列 孔隙度/% 中发现 3 个异常值
+2025-03-30 11:19:49,459 - data_processor - INFO - 已将列 孔隙度/% 中的异常值限制在边界内
+2025-03-30 11:19:49,460 - data_processor - WARNING - 列 注入前含油饱和度/% 中发现 1 个异常值
+2025-03-30 11:19:49,462 - data_processor - INFO - 已将列 注入前含油饱和度/% 中的异常值限制在边界内
+2025-03-30 11:19:49,463 - data_processor - WARNING - 列 pv数 中发现 3 个异常值
+2025-03-30 11:19:49,465 - data_processor - INFO - 已将列 pv数 中的异常值限制在边界内
+2025-03-30 11:19:49,466 - data_processor - INFO - 已将'注气井压裂'列转换为数值: 是=1, 否=0
+2025-03-30 11:19:49,466 - data_processor - INFO - 已将列名从中文转换为英文
+2025-03-30 11:19:49,469 - data_processor - INFO - 预处理后的数据已保存到 /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/data/processed/processed_data.csv
+2025-03-30 11:19:49,469 - __main__ - INFO - 数据处理完成，耗时 0.04 秒
+2025-03-30 11:19:49,469 - __main__ - INFO - 处理后的数据形状: (70, 14)
+2025-03-30 11:19:49,469 - __main__ - INFO - 
+================================================================================
+                            模型训练 (gaussian_process)                             
+================================================================================
+2025-03-30 11:19:49,718 - __main__ - INFO - 开始训练 gaussian_process 模型...
+2025-03-30 11:19:49,719 - main - INFO - 开始训练 gaussian_process 模型
+2025-03-30 11:19:49,719 - data_processor - INFO - 尝试使用 gbk 编码加载数据: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/data/raw/CO2气窜原始表.csv
+2025-03-30 11:19:49,721 - data_processor - INFO - 成功使用 gbk 编码加载数据
+2025-03-30 11:19:49,722 - data_processor - INFO - 开始预处理数据
+2025-03-30 11:19:49,724 - data_processor - WARNING - 列 地层温度℃ 中发现 2 个异常值
+2025-03-30 11:19:49,726 - data_processor - INFO - 已将列 地层温度℃ 中的异常值限制在边界内
+2025-03-30 11:19:49,729 - data_processor - WARNING - 列 注气前地层压力mpa 中发现 1 个异常值
+2025-03-30 11:19:49,730 - data_processor - INFO - 已将列 注气前地层压力mpa 中的异常值限制在边界内
+2025-03-30 11:19:49,734 - data_processor - WARNING - 列 渗透率md 中发现 6 个异常值
+2025-03-30 11:19:49,735 - data_processor - INFO - 已将列 渗透率md 中的异常值限制在边界内
+2025-03-30 11:19:49,737 - data_processor - WARNING - 列 地层原油粘度mpas 中发现 11 个异常值
+2025-03-30 11:19:49,738 - data_processor - INFO - 已将列 地层原油粘度mpas 中的异常值限制在边界内
+2025-03-30 11:19:49,740 - data_processor - WARNING - 列 地层原油密度g/cm3 中发现 4 个异常值
+2025-03-30 11:19:49,742 - data_processor - INFO - 已将列 地层原油密度g/cm3 中的异常值限制在边界内
+2025-03-30 11:19:49,744 - data_processor - WARNING - 列 井组有效厚度m 中发现 6 个异常值
+2025-03-30 11:19:49,745 - data_processor - INFO - 已将列 井组有效厚度m 中的异常值限制在边界内
+2025-03-30 11:19:49,747 - data_processor - WARNING - 列 井距m 中发现 4 个异常值
+2025-03-30 11:19:49,748 - data_processor - INFO - 已将列 井距m 中的异常值限制在边界内
+2025-03-30 11:19:49,750 - data_processor - WARNING - 列 孔隙度/% 中发现 3 个异常值
+2025-03-30 11:19:49,752 - data_processor - INFO - 已将列 孔隙度/% 中的异常值限制在边界内
+2025-03-30 11:19:49,753 - data_processor - WARNING - 列 注入前含油饱和度/% 中发现 1 个异常值
+2025-03-30 11:19:49,755 - data_processor - INFO - 已将列 注入前含油饱和度/% 中的异常值限制在边界内
+2025-03-30 11:19:49,757 - data_processor - WARNING - 列 pv数 中发现 3 个异常值
+2025-03-30 11:19:49,758 - data_processor - INFO - 已将列 pv数 中的异常值限制在边界内
+2025-03-30 11:19:49,759 - data_processor - INFO - 已将'注气井压裂'列转换为数值: 是=1, 否=0
+2025-03-30 11:19:49,759 - data_processor - INFO - 已将列名从中文转换为英文
+2025-03-30 11:19:49,760 - enhanced_features_optimized - WARNING - 缺少创建物理特征所需的列: ['temperature']
+2025-03-30 11:19:49,760 - enhanced_features_optimized - INFO - 使用formation_temperature列替代temperature列
+2025-03-30 11:19:49,761 - enhanced_features_optimized - INFO - 将列 block 转换为数值类型
+2025-03-30 11:19:49,777 - enhanced_features_optimized - INFO - 创建了12个物理约束特征
+2025-03-30 11:19:49,802 - enhanced_features_optimized - ERROR - 特征选择时出错: Input X contains NaN.
+SelectKBest does not accept missing values encoded as NaN natively. For supervised learning, you might want to consider sklearn.ensemble.HistGradientBoostingClassifier and Regressor which accept missing values encoded as NaNs natively. Alternatively, it is possible to preprocess the data, for instance by using an imputer transformer in a pipeline or drop samples with missing values. See https://scikit-learn.org/stable/modules/impute.html You can find a list of all estimators that handle NaN values at the following page: https://scikit-learn.org/stable/modules/impute.html#estimators-that-handle-nan-values
+2025-03-30 11:19:49,808 - __main__ - ERROR - 模型训练失败: Input X contains NaN.
+GaussianProcessRegressor does not accept missing values encoded as NaN natively. For supervised learning, you might want to consider sklearn.ensemble.HistGradientBoostingClassifier and Regressor which accept missing values encoded as NaNs natively. Alternatively, it is possible to preprocess the data, for instance by using an imputer transformer in a pipeline or drop samples with missing values. See https://scikit-learn.org/stable/modules/impute.html You can find a list of all estimators that handle NaN values at the following page: https://scikit-learn.org/stable/modules/impute.html#estimators-that-handle-nan-values
+2025-03-30 11:19:49,809 - __main__ - ERROR - 模型训练失败，终止流程

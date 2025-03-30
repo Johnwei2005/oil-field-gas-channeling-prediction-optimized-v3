@@ -1,0 +1,53 @@
+2025-03-30 11:19:00,454 - __main__ - INFO - 
+================================================================================
+                              CCUS CO2气窜预测系统全流程启动                               
+================================================================================
+2025-03-30 11:19:00,454 - __main__ - INFO - 选择的模型类型: gaussian_process
+2025-03-30 11:19:00,454 - __main__ - INFO - 跳过的步骤: 无
+2025-03-30 11:19:00,455 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/data
+2025-03-30 11:19:00,455 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/data/raw
+2025-03-30 11:19:00,455 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/data/processed
+2025-03-30 11:19:00,455 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/models
+2025-03-30 11:19:00,455 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/results
+2025-03-30 11:19:00,455 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/logs
+2025-03-30 11:19:00,455 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/docs
+2025-03-30 11:19:00,455 - __main__ - INFO - 确保目录存在: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/notebooks
+2025-03-30 11:19:00,455 - __main__ - INFO - 
+================================================================================
+                                      数据处理                                      
+================================================================================
+2025-03-30 11:19:01,308 - __main__ - INFO - 开始数据处理...
+2025-03-30 11:19:01,308 - data_processor - INFO - 尝试使用 gbk 编码加载数据: /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/data/raw/CO2气窜原始表.csv
+2025-03-30 11:19:01,314 - data_processor - INFO - 成功使用 gbk 编码加载数据
+2025-03-30 11:19:01,315 - data_processor - INFO - 开始预处理数据
+2025-03-30 11:19:01,319 - data_processor - WARNING - 列 地层温度℃ 中发现 2 个异常值
+2025-03-30 11:19:01,321 - data_processor - INFO - 已将列 地层温度℃ 中的异常值限制在边界内
+2025-03-30 11:19:01,325 - data_processor - WARNING - 列 注气前地层压力mpa 中发现 1 个异常值
+2025-03-30 11:19:01,326 - data_processor - INFO - 已将列 注气前地层压力mpa 中的异常值限制在边界内
+2025-03-30 11:19:01,330 - data_processor - WARNING - 列 渗透率md 中发现 6 个异常值
+2025-03-30 11:19:01,331 - data_processor - INFO - 已将列 渗透率md 中的异常值限制在边界内
+2025-03-30 11:19:01,333 - data_processor - WARNING - 列 地层原油粘度mpas 中发现 11 个异常值
+2025-03-30 11:19:01,334 - data_processor - INFO - 已将列 地层原油粘度mpas 中的异常值限制在边界内
+2025-03-30 11:19:01,336 - data_processor - WARNING - 列 地层原油密度g/cm3 中发现 4 个异常值
+2025-03-30 11:19:01,337 - data_processor - INFO - 已将列 地层原油密度g/cm3 中的异常值限制在边界内
+2025-03-30 11:19:01,339 - data_processor - WARNING - 列 井组有效厚度m 中发现 6 个异常值
+2025-03-30 11:19:01,340 - data_processor - INFO - 已将列 井组有效厚度m 中的异常值限制在边界内
+2025-03-30 11:19:01,342 - data_processor - WARNING - 列 井距m 中发现 4 个异常值
+2025-03-30 11:19:01,344 - data_processor - INFO - 已将列 井距m 中的异常值限制在边界内
+2025-03-30 11:19:01,346 - data_processor - WARNING - 列 孔隙度/% 中发现 3 个异常值
+2025-03-30 11:19:01,347 - data_processor - INFO - 已将列 孔隙度/% 中的异常值限制在边界内
+2025-03-30 11:19:01,349 - data_processor - WARNING - 列 注入前含油饱和度/% 中发现 1 个异常值
+2025-03-30 11:19:01,350 - data_processor - INFO - 已将列 注入前含油饱和度/% 中的异常值限制在边界内
+2025-03-30 11:19:01,352 - data_processor - WARNING - 列 pv数 中发现 3 个异常值
+2025-03-30 11:19:01,353 - data_processor - INFO - 已将列 pv数 中的异常值限制在边界内
+2025-03-30 11:19:01,354 - data_processor - INFO - 已将'注气井压裂'列转换为数值: 是=1, 否=0
+2025-03-30 11:19:01,355 - data_processor - INFO - 已将列名从中文转换为英文
+2025-03-30 11:19:01,359 - data_processor - INFO - 预处理后的数据已保存到 /home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/data/processed/processed_data.csv
+2025-03-30 11:19:01,359 - __main__ - INFO - 数据处理完成，耗时 0.05 秒
+2025-03-30 11:19:01,359 - __main__ - INFO - 处理后的数据形状: (70, 14)
+2025-03-30 11:19:01,359 - __main__ - INFO - 
+================================================================================
+                            模型训练 (gaussian_process)                             
+================================================================================
+2025-03-30 11:19:01,725 - __main__ - ERROR - 模型训练失败: cannot import name 'create_physics_informed_features' from 'enhanced_features_optimized' (/home/ubuntu/workspace/oil-field-gas-channeling-prediction-optimized-v3/enhanced_features_optimized.py)
+2025-03-30 11:19:01,725 - __main__ - ERROR - 模型训练失败，终止流程

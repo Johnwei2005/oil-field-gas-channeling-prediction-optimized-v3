@@ -26,7 +26,7 @@ logging.basicConfig(level=logging.INFO,
                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def create_physics_features(df, target_col='PV_number'):
+def create_physics_informed_features(df, target_col='PV_number'):
     """
     基于物理约束创建特征
     
@@ -71,8 +71,18 @@ def create_physics_features(df, target_col='PV_number'):
                 df_physics = df_physics.drop(columns=[col])
     
     # 确保数据中没有NaN或无穷大值
-    df_physics = df_physics.fillna(df_physics.mean())
-    df_physics = df_physics.replace([np.inf, -np.inf], np.nan).fillna(df_physics.mean())
+    # 先计算每列的均值，忽略NaN值
+    column_means = df_physics.mean(skipna=True)
+    # 使用计算出的均值填充NaN值
+    df_physics = df_physics.fillna(column_means)
+    # 替换无穷大值为NaN，然后再次填充
+    df_physics = df_physics.replace([np.inf, -np.inf], np.nan)
+    df_physics = df_physics.fillna(column_means)
+    
+    # 再次检查是否还有NaN值，如果有则使用0填充（以防万一）
+    if df_physics.isnull().any().any():
+        logger.warning("在填充均值后仍然存在NaN值，使用0填充")
+        df_physics = df_physics.fillna(0)
     
     try:
         # 1. 迁移性比 (Mobility Ratio)
@@ -151,8 +161,18 @@ def select_optimal_features_limited(df, target_col, max_features=10):
         y = df[target_col]
         
         # 确保数据中没有NaN或无穷大值
-        X = X.fillna(X.mean())
-        X = X.replace([np.inf, -np.inf], np.nan).fillna(X.mean())
+        # 先计算每列的均值，忽略NaN值
+        column_means = X.mean(skipna=True)
+        # 使用计算出的均值填充NaN值
+        X = X.fillna(column_means)
+        # 替换无穷大值为NaN，然后再次填充
+        X = X.replace([np.inf, -np.inf], np.nan)
+        X = X.fillna(column_means)
+        
+        # 再次检查是否还有NaN值，如果有则使用0填充（以防万一）
+        if X.isnull().any().any():
+            logger.warning("在特征选择中仍然存在NaN值，使用0填充")
+            X = X.fillna(0)
         
         # 确保所有列都是数值类型
         for col in X.columns:
@@ -282,7 +302,7 @@ if __name__ == "__main__":
     df = load_and_preprocess_data('data/raw/CO2气窜原始表.csv')
     
     # 创建物理约束特征
-    df_physics = create_physics_features(df)
+    df_physics = create_physics_informed_features(df)
     
     # 选择最优特征
     selected_features = select_optimal_features_limited(df_physics, 'PV_number', max_features=10)
